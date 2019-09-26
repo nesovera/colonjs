@@ -1,0 +1,17 @@
+#!/bin/bash
+
+echo "--------------------------";
+echo "Building $1 $2";
+echo "--------------------------";
+
+if [[ $1 == "build" ]]; then
+    rm -rf ./dist
+    mkdir -p ./dist/
+    npm run build
+    exit 0;
+fi
+
+if [[ $1 == "server" ]]; then
+    npm run server
+    exit 0;
+fi

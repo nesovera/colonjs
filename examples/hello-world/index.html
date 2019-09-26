@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+
+    <body>
+        <div id="app">
+            <span :text="$scope.message"></span>
+        </div>
+    </body>
+
+    <script src="../../dist/colon.min.js"></script>
+    <script>
+        var app = new Colon({
+            el: document.getElementById("app"),
+            scope:{
+                message:"Hello world!",
+            },
+        });
+    </script>
+    
+</html>
