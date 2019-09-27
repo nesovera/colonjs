@@ -5,7 +5,9 @@
   "main": "src/Colon.js",
   "source": "src/index.js",
   "module": "dist/colon.js",
+  "browser": "dist/colon.min.js",
   "umd:main": "dist/colon.min.js",
+  "jsdelivr": "dist/colon.min.js",
   "unpkg": "dist/colon.min.js",
   "scripts": {
     "lint": "eslint ./src",
