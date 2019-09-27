@@ -8,6 +8,7 @@ Documentation
 
 Basics: 
 
+<<<<<<< HEAD
 [ColonJs #1: Hello World](https://htmlpen.com/nesovera/colonjs-hello-world/editor/)<br/>
 [ColonJs #2: Bind Dynamic Title](https://htmlpen.com/nesovera/colonjs-bind-title/editor/)<br/>
 [ColonJs #3: Conditional statements](https://htmlpen.com/nesovera/colonjs-if-statement/editor/)<br/>
@@ -15,6 +16,15 @@ Basics:
 [ColonJs #5: Event Handling](https://htmlpen.com/nesovera/colonjs-events/editor/)<br/>
 [ColonJs #6: User Input](https://htmlpen.com/nesovera/colonjs-user-input/editor/)<br/>
 [ColonJs #7: Components](https://htmlpen.com/nesovera/colonjs-components/editor/)<br/>
+=======
+[![ColonJs #1: Hello World](https://htmlpen.com/nesovera/colonjs-hello-world/editor/)
+[![ColonJs #2: Bind Dynamic Title](https://htmlpen.com/nesovera/colonjs-bind-title/editor/)
+[![ColonJs #3: Conditional statements](https://htmlpen.com/nesovera/colonjs-if-statement/)
+[![ColonJs #4: For Loops](https://htmlpen.com/nesovera/colonjs-for-loop/)
+[![ColonJs #5: Event Handling](https://htmlpen.com/nesovera/colonjs-events/)
+[![ColonJs #6: User Input](https://htmlpen.com/nesovera/colonjs-user-input/)
+[![ColonJs #7: Components](https://htmlpen.com/nesovera/colonjs-components/)
+>>>>>>> 3e4b9fdadf6e8c731bb8fb25cd00178129778243
 
 More Coming soon...
 
