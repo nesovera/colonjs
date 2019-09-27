@@ -1,12 +1,12 @@
 Colon.js
 ===========
 
-A micro (3kb) front end framework similar to Vue.js
+A micro front end framework (3kb gzipped) similar to Vue.js
 
 Documentation
 ------------
 
-Basics: 
+Introduction: 
 
 [ColonJs #1: Hello World](https://htmlpen.com/nesovera/colonjs-hello-world/editor/)<br/>
 [ColonJs #2: Bind Dynamic Title](https://htmlpen.com/nesovera/colonjs-bind-title/editor/)<br/>
@@ -22,7 +22,7 @@ More Coming soon...
 Contributing
 ------------
 
-We welcome contributions!
+We welcome contributions! Let's together make it, faster, smaller, safer.
 
 
 Version history
