@@ -8,6 +8,21 @@ if [[ $1 == "build" ]]; then
     rm -rf ./dist
     mkdir -p ./dist/
     npm run build
+    echo "package.json:";
+    cat package.json | grep 'version';
+    read -p "Publish to github? " -n 1 -r
+    echo;
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        git add .;
+        read -p "Commit message: ";
+        git commit -m "$REPLY";
+        git push;
+    fi
+    read -p "Publish to npm? " -n 1 -r
+    echo;
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        npm publish;
+    fi
     exit 0;
 fi
 

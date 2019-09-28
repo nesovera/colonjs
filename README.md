@@ -15,6 +15,7 @@ Introduction:
 - [ColonJs #5: Event Handling](https://htmlpen.com/nesovera/colonjs-events/editor/)
 - [ColonJs #6: User Input](https://htmlpen.com/nesovera/colonjs-user-input/editor/)
 - [ColonJs #7: Components](https://htmlpen.com/nesovera/colonjs-components/editor/)
+- [ColonJs #8: Directives (Example: Markdown Interpreter)](https://htmlpen.com/nesovera/colonjs-directives/editor/)
 
 More Coming soon...
 
