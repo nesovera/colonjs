@@ -1,5 +1,5 @@
 /*!
- * Colon.js v0.0.1
+ * Colon.js v0.0.4
  * (c) 2018-2019 NesoVera (nesovera@gmail.com)
  * Released under the MIT License.
  */
@@ -235,7 +235,8 @@ function () {
   _proto.renderTreeNode = function renderTreeNode(treeNode) {
     var _this3 = this;
 
-    var $this = treeNode.node,
+    var $app = this,
+        $this = treeNode.node,
         $parentNode = treeNode.parent,
         $type = treeNode.type,
         $attrs = treeNode.attrs,
@@ -278,7 +279,25 @@ function () {
 
       if ($this && typeof $this.getAttribute($attr) !== "undefined") $this.removeAttribute($attr);
 
-      if ($attr === ":for") {
+      if (/^@/.test($attr)) {
+        // If the attribute starts with @, add it as an event listener
+        if (treeNode.events.indexOf(attr) >= 0) return;
+        $this.addEventListener(attr, function () {
+          for (var _len = arguments.length, $arguments = new Array(_len), _key = 0; _key < _len; _key++) {
+            $arguments[_key] = arguments[_key];
+          }
+
+          _this3.run($value, {
+            $multi: true,
+            $arguments: $arguments,
+            $event: $arguments[0],
+            $this: $this
+          });
+
+          _this3.render();
+        }, false);
+        treeNode.events.push(attr);
+      } else if ($attr === ":for") {
         // Handle :for
         var _$value$match$slice = $value.match(/^\s*([^\s,]+)(?:\s*,\s*([^\s,]+))?\s+in\s+(.+)/).slice(1),
             valVar = _$value$match$slice[0],
@@ -287,7 +306,9 @@ function () {
 
         _this3.addPlaceHolder(treeNode, ":for");
 
-        list = _this3.run(list) || [];
+        list = _this3.run(list, {
+          $this: $this
+        }) || [];
         if (Array.isArray(list)) list = list.map(function (v, k) {
           return [k, v];
         });
@@ -321,7 +342,9 @@ function () {
 
         var newNodeClone;
 
-        if (_this3.run($value)) {
+        if (_this3.run($value, {
+          $this: $this
+        })) {
           newNodeClone = treeNode.cloneNode.cloneNode(true);
           new Colon({
             el: newNodeClone,
@@ -339,7 +362,9 @@ function () {
       } else if (/^:(class|style)$/.test($attr)) {
         // Handle :class and :style
         var isClass = attr === "class";
-        var newValue = _this3.run($value) || "";
+        var newValue = _this3.run($value, {
+          $this: $this
+        }) || "";
         if (Array.isArray(newValue)) newValue = newValue.join(isClass ? " " : ";");
         if (_this3.isObject(newValue)) newValue = Object.entries(newValue).reduce(function (acc, _ref11) {
           var k = _ref11[0],
@@ -348,27 +373,11 @@ function () {
         }, "");
 
         _this3.diffAttr($this, attr, null, ("" + ($attrs[attr] || '') + (isClass ? " " : ";") + (newValue || '')).trim());
-      } else if (/^@/.test($attr)) {
-        // If the attribute starts with @, add it as an event listener
-        if (treeNode.events.indexOf(attr) >= 0) return;
-        $this.addEventListener(attr, function () {
-          for (var _len = arguments.length, $arguments = new Array(_len), _key = 0; _key < _len; _key++) {
-            $arguments[_key] = arguments[_key];
-          }
-
-          _this3.run($value, {
-            $multi: true,
-            $arguments: $arguments,
-            $event: $arguments[0],
-            $this: $this
-          });
-
-          _this3.render();
-        }, false);
-        treeNode.events.push(attr);
       } else if ($attr === ":show") {
         // Handle :show
-        var _newValue = _this3.run($value);
+        var _newValue = _this3.run($value, {
+          $this: $this
+        });
 
         $this[_newValue ? 'removeAttribute' : 'setAttribute']('__CJSHIDE', _newValue);
       } else if ($type === "slot" && $attr === ":name") {
@@ -394,7 +403,9 @@ function () {
         // Handle :html, :text, :json
         if (!$this) return;
 
-        var _newValue3 = _this3.run($value);
+        var _newValue3 = _this3.run($value, {
+          $this: $this
+        });
 
         if (attr === "json") _newValue3 = JSON.stringify(_newValue3, null, 2);
         if (_newValue3 === null || typeof _newValue3 === 'undefined') _newValue3 = "";
@@ -408,6 +419,7 @@ function () {
 
           if (new RegExp(k).test($attr)) {
             v({
+              $app: $app,
               $attr: $attr,
               $value: $value,
               $this: $this,
@@ -417,7 +429,9 @@ function () {
           }
         }).length) return; // If there are no directives, run the code and set it as an attribute.
 
-        var _newValue4 = _this3.run($value);
+        var _newValue4 = _this3.run($value, {
+          $this: $this
+        });
 
         if (/^:/.test(attr)) attr = attr.slice(1);
 
