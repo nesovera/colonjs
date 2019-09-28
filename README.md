@@ -1,20 +1,20 @@
 Colon.js
 ===========
 
-A micro front end framework (3kb gzipped) similar to Vue.js
+A micro front end framework (3kb gzipped) similar to Vue.js. Zero dependencies, IE11 compatible. 
 
 Documentation
 ------------
 
 Introduction: 
 
-[ColonJs #1: Hello World](https://htmlpen.com/nesovera/colonjs-hello-world/editor/)<br/>
-[ColonJs #2: Bind Dynamic Title](https://htmlpen.com/nesovera/colonjs-bind-title/editor/)<br/>
-[ColonJs #3: Conditional statements](https://htmlpen.com/nesovera/colonjs-if-statement/editor/)<br/>
-[ColonJs #4: For Loops](https://htmlpen.com/nesovera/colonjs-for-loop/editor/)<br/>
-[ColonJs #5: Event Handling](https://htmlpen.com/nesovera/colonjs-events/editor/)<br/>
-[ColonJs #6: User Input](https://htmlpen.com/nesovera/colonjs-user-input/editor/)<br/>
-[ColonJs #7: Components](https://htmlpen.com/nesovera/colonjs-components/editor/)<br/>
+- [ColonJs #1: Hello World](https://htmlpen.com/nesovera/colonjs-hello-world/editor/)
+- [ColonJs #2: Bind Dynamic Title](https://htmlpen.com/nesovera/colonjs-bind-title/editor/)
+- [ColonJs #3: Conditional statements](https://htmlpen.com/nesovera/colonjs-if-statement/editor/)
+- [ColonJs #4: For Loops](https://htmlpen.com/nesovera/colonjs-for-loop/editor/)
+- [ColonJs #5: Event Handling](https://htmlpen.com/nesovera/colonjs-events/editor/)
+- [ColonJs #6: User Input](https://htmlpen.com/nesovera/colonjs-user-input/editor/)
+- [ColonJs #7: Components](https://htmlpen.com/nesovera/colonjs-components/editor/)
 
 More Coming soon...
 
@@ -22,7 +22,13 @@ More Coming soon...
 Contributing
 ------------
 
-We welcome contributions! Let's together make it, faster, smaller, safer.
+We welcome contributions! Let's together make it faster, smaller, safer.
+
+
+Showcase
+------------
+
+Send us what you build using ColonJs, we will list them here.
 
 
 Version history

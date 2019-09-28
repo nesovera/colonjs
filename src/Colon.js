@@ -62,7 +62,7 @@ class Colon{
     // eval() code after creating environment variables
     /* eslint-disable no-unused-vars */
     run($code,{$multi=false,$arguments,$event,$this}={}){
-        let $scope = this.scope,$parent = this.parent,$props = this.props,$loopScope = this.loopScope;
+        let $app = this, $scope = this.scope, $parent = this.parent,$props = this.props,$loopScope = this.loopScope;
         let loopVars =  $loopScope.map(({keyVar,keyValue,valVar},i)=>(
             (keyVar?`var ${keyVar} = ${JSON.stringify(keyValue)};`:``) +
             `var ${valVar} = $loopScope[${i}].arr.find(function(v){return v[0]===${JSON.stringify(keyValue)}})[1];`
@@ -109,7 +109,8 @@ class Colon{
     }
     // Render one node of the template tree.
     renderTreeNode(treeNode){
-        let $this = treeNode.node,
+        let $app = this,
+            $this = treeNode.node,
             $parentNode = treeNode.parent,
             $type = treeNode.type,
             $attrs = treeNode.attrs,
@@ -135,11 +136,16 @@ class Colon{
                 let attr = $attr.slice(1);
                 // Remove the attribute with : or @ from DOM since it is unnecessary
                 if($this && typeof $this.getAttribute($attr) !== "undefined") $this.removeAttribute($attr);
-                if($attr===":for"){
+                if(/^@/.test($attr)){
+                    // If the attribute starts with @, add it as an event listener
+                    if(treeNode.events.indexOf(attr)>=0) return;
+                    $this.addEventListener(attr,(...$arguments)=>{ this.run($value,{$multi:true,$arguments,$event:$arguments[0],$this}); this.render(); },false)
+                    treeNode.events.push(attr);
+                }else if($attr===":for"){
                     // Handle :for
                     let [valVar,keyVar,list] = $value.match(/^\s*([^\s,]+)(?:\s*,\s*([^\s,]+))?\s+in\s+(.+)/).slice(1);
                     this.addPlaceHolder(treeNode,":for");
-                    list = this.run(list) || [];
+                    list = this.run(list,{$this}) || [];
                     if(Array.isArray(list)) list = list.map((v,k)=>[k,v]);
                     if(this.isObject(list)) list = Object.entries(list);
                     list = list.reduce((acc,[keyValue],i,arr) => {
@@ -154,7 +160,7 @@ class Colon{
                     // Handle :if
                     this.addPlaceHolder(treeNode,":if");
                     let newNodeClone;
-                    if(this.run($value)){
+                    if(this.run($value,{$this})){
                         newNodeClone = treeNode.cloneNode.cloneNode(true);
                         new Colon({ el: newNodeClone, recursive:true, parent:this.parent, props:this.props, scope:this.scope, directives:this.directives, components:this.components, loopScope: this.loopScope });
                     }
@@ -162,18 +168,13 @@ class Colon{
                 }else if(/^:(class|style)$/.test($attr)){
                     // Handle :class and :style
                     let isClass = attr==="class";
-                    let newValue = this.run($value) || "";
+                    let newValue = this.run($value,{$this}) || "";
                     if(Array.isArray(newValue)) newValue = newValue.join(isClass ?" ":";");
                     if(this.isObject(newValue)) newValue = Object.entries(newValue).reduce((acc,[k,v])=>`${acc} ${isClass?(v?k:''):(`${k}:${v};`)}`,"");
                     this.diffAttr($this,attr,null,`${$attrs[attr]||''}${isClass?" ":";"}${newValue||''}`.trim());
-                }else if(/^@/.test($attr)){
-                    // If the attribute starts with @, add it as an event listener
-                    if(treeNode.events.indexOf(attr)>=0) return;
-                    $this.addEventListener(attr,(...$arguments)=>{ this.run($value,{$multi:true,$arguments,$event:$arguments[0],$this}); this.render(); },false)
-                    treeNode.events.push(attr);
                 }else if($attr===":show"){
                     // Handle :show
-                    let newValue = this.run($value);
+                    let newValue = this.run($value,{$this});
                     $this[newValue?'removeAttribute':'setAttribute']('__CJSHIDE',newValue);
                 }else if($type === "slot" && $attr===":name"){
                     // Handle :name attribute for <slot>
@@ -185,7 +186,7 @@ class Colon{
                 }else if(/^:(html|text|json)$/.test($attr)){
                     // Handle :html, :text, :json
                     if(!$this) return;
-                    let newValue = this.run($value);
+                    let newValue = this.run($value,{$this});
                     if(attr==="json") newValue = JSON.stringify(newValue,null,2)
                     if(newValue===null || typeof newValue === 'undefined') newValue = "";
                     let prop = attr==="html" ? "innerHTML" : "innerText";
@@ -194,12 +195,12 @@ class Colon{
                     // Run all the matching directives for the attribute
                     if(Object.entries(this.directives).filter(([k,v])=>{
                         if((new RegExp(k)).test($attr)){
-                            v({$attr,$value,$this,$parentNode});
+                            v({$app,$attr,$value,$this,$parentNode});
                             return true;
                         }
                     }).length) return;
                     // If there are no directives, run the code and set it as an attribute.
-                    let newValue = this.run($value);
+                    let newValue = this.run($value,{$this});
                     if(/^:/.test(attr)) attr = attr.slice(1);
                     this.diffAttr($this,attr,null,newValue);
                 }
