@@ -1,9 +1,11 @@
 class Colon{
     constructor(params={}){
         // Attach params values to the instance
+        this.root = params.root || this;
         this.parent = params.parent;
         this.props = params.props || {};
-        this.scope = (typeof params.scope === "function") ? params.scope() : (params.scope || {});
+        this.data = (typeof params.data === "function") ? params.data() : (params.data || {});
+        this.methods = (typeof params.methods === "function") ? params.methods() : (params.methods || {});
         this.loopScope = params.loopScope || [];
         this.directives = params.directives || {};
         // Make all component names lowercase
@@ -11,14 +13,16 @@ class Colon{
         // If params has template variable create 'el' and attach to the instance
         if(params.template){
             this.el = params.el || document.createElement("template");
-            this.el.innerHTML = params.template;
+            if(typeof params.template === 'string')this.el.innerHTML = params.template;
+            if(Array.isArray(params.template)) params.template.forEach(v=>this.el.appendChild(v));
         }
         this.el = this.el || params.el;
-        if(!this.el) return console.error("Colon.js root element is not found");
-        // If not a recursive instance, 'this' is bound to functions in scope and directives
+        if(!this.el) return console.error("Colon root element not found");
+        // If not a recursive instance, 'this' is bound to functions in data, methods and directives
         // If a recursive instance, directives will have the initial instance's 'this'
         if(!params.recursive){
-            Object.entries(this.scope).forEach(([k,v])=>{ if(typeof v ==="function") this.scope[k] = v.bind(this); });
+            Object.entries(this.data).forEach(([k,v])=>{ if(typeof v ==="function") this.data[k] = v.bind(this); });
+            Object.entries(this.methods).forEach(([k,v])=>{ if(typeof v ==="function") this.methods[k] = v.bind(this); });
             Object.entries(this.directives).forEach(([k,v])=>{ this.directives[k] = v.bind(this); });
         }
         // Bind 'this' to lifecycle event functions
@@ -62,8 +66,14 @@ class Colon{
     // eval() code after creating environment variables
     /* eslint-disable no-unused-vars */
     run($code,{$multi=false,$arguments,$event,$this}={}){
-        let $app = this, $scope = this.scope, $parent = this.parent,$props = this.props,$loopScope = this.loopScope;
-        let loopVars =  $loopScope.map(({keyVar,keyValue,valVar},i)=>(
+        var $app = this;
+        var $data = $app.data,
+            $methods = $app.methods,
+            $root = $app.root,
+            $parent = $app.parent,
+            $props = $app.props,
+            $loopScope = $app.loopScope;
+        var loopVars =  $loopScope.map(({keyVar,keyValue,valVar},i)=>(
             (keyVar?`var ${keyVar} = ${JSON.stringify(keyValue)};`:``) +
             `var ${valVar} = $loopScope[${i}].arr.find(function(v){return v[0]===${JSON.stringify(keyValue)}})[1];`
         )).join("");
@@ -95,8 +105,8 @@ class Colon{
         return oldNode;
     }
     diffAttr(node,attr,oldValue,newValue){
-        if(oldValue===null) oldValue = node.getAttribute(attr);
-        if(attr.charAt(0)===":" || oldValue === newValue) return;
+        if(oldValue === null) oldValue = node.getAttribute(attr);
+        if(oldValue === newValue) return;
         this.setAttr(node,attr,newValue)
     }
     // Function to remove node and add placeholder for :for, :if, <slot>, and custom components
@@ -117,13 +127,26 @@ class Colon{
             $children = treeNode.children;
         // If node has attribute :pre, do not process
         if(this.attrExist($attrs,[":pre"])) return;
-        // Handle if the node is a component
+        // Handle if node is a component
         if(this.components[$type]){
             this.addPlaceHolder(treeNode,$type);
             let props = Object.entries($attrs).map(([k,v])=> (k.charAt(0)===":")?[k.slice(1),this.run(v)]:[k,v]).reduce((acc,[k,v])=>{ acc[k]=v; return acc; },{});
             props.children = treeNode.cloneNode.cloneNode(true);
-            let componentNode = (new Colon({ props, parent:this, ...this.components[$type] })).el;
-            treeNode.renderedChildren = this.diffArray( $parentNode, treeNode.placeHolder, treeNode.renderedChildren, componentNode ? this.nodeToArray(componentNode) : [] );
+            if(treeNode.instance){
+                treeNode.instance.render();
+            }else{
+                treeNode.instance = new Colon({ props, root:this.root, parent:this, ...this.components[$type] });
+                const componentNode = treeNode.instance.el;
+                treeNode.renderedChildren = this.diffArray( $parentNode, treeNode.placeHolder, treeNode.renderedChildren, componentNode ? this.nodeToArray(componentNode) : [] );
+            }
+            return;
+        }
+        if($type === "slot" ){
+            // Handle <slot> in component
+            this.addPlaceHolder(treeNode,"slot");
+            const childNodes = this.getChildNodes(this.props.children.cloneNode(true));
+            new Colon({ template: childNodes, recursive:true, root:this.root, parent:this, props:this.props, data:this.data, methods:this.methods, directives:this.directives, components:this.components, loopScope: this.loopScope });
+            treeNode.renderedChildren = this.diffArray( $parentNode, treeNode.placeHolder, treeNode.renderedChildren, childNodes);
             return;
         }
         // Cycle through all the attributes that start with : or @
@@ -151,7 +174,7 @@ class Colon{
                     list = list.reduce((acc,[keyValue],i,arr) => {
                         // Create a new Colon instance for each row of the list and render
                         let newNodeClone = treeNode.cloneNode.cloneNode(true);
-                        new Colon({ el: newNodeClone, recursive:true, parent:this.parent, props:this.props, scope:this.scope, directives:this.directives, components:this.components, loopScope: [ ...this.loopScope, {arr,keyVar,keyValue,valVar} ] });
+                        new Colon({ el: newNodeClone, recursive:true, root:this.root, parent:this.parent, props:this.props, data:this.data, methods:this.methods, directives:this.directives, components:this.components, loopScope: [ ...this.loopScope, {arr,keyVar,keyValue,valVar} ] });
                         acc.push(...this.nodeToArray(newNodeClone));
                         return acc;
                     },[]);
@@ -162,7 +185,7 @@ class Colon{
                     let newNodeClone;
                     if(this.run($value,{$this})){
                         newNodeClone = treeNode.cloneNode.cloneNode(true);
-                        new Colon({ el: newNodeClone, recursive:true, parent:this.parent, props:this.props, scope:this.scope, directives:this.directives, components:this.components, loopScope: this.loopScope });
+                        new Colon({ el: newNodeClone, recursive:true, root:this.root, parent:this.parent, props:this.props, data:this.data, methods:this.methods, directives:this.directives, components:this.components, loopScope: this.loopScope });
                     }
                     treeNode.renderedChildren = this.diffArray( $parentNode, treeNode.placeHolder, treeNode.renderedChildren, newNodeClone ? this.nodeToArray(newNodeClone) : []);
                 }else if(/^:(class|style)$/.test($attr)){
@@ -171,18 +194,12 @@ class Colon{
                     let newValue = this.run($value,{$this}) || "";
                     if(Array.isArray(newValue)) newValue = newValue.join(isClass ?" ":";");
                     if(this.isObject(newValue)) newValue = Object.entries(newValue).reduce((acc,[k,v])=>`${acc} ${isClass?(v?k:''):(`${k}:${v};`)}`,"");
-                    this.diffAttr($this,attr,null,`${$attrs[attr]||''}${isClass?" ":";"}${newValue||''}`.trim());
+                    let styleString = `${$attrs[attr]||''}${isClass?" ":";"}${newValue||''}`.trim();
+                    this.diffAttr($this,attr,null,styleString);
                 }else if($attr===":show"){
                     // Handle :show
                     let newValue = this.run($value,{$this});
                     $this[newValue?'removeAttribute':'setAttribute']('__CJSHIDE',newValue);
-                }else if($type === "slot" && $attr===":name"){
-                    // Handle :name attribute for <slot>
-                    let newValue = this.run($value);
-                    this.addPlaceHolder(treeNode,"slot:"+newValue);
-                    let newNodeClone = this.props.children.cloneNode(true);
-                    new Colon({ el: newNodeClone, recursive:true, parent:this, props:this.props, scope:this.scope, directives:this.directives, components:this.components, loopScope: this.loopScope });
-                    treeNode.renderedChildren = this.diffArray( $parentNode, treeNode.placeHolder, treeNode.renderedChildren, Array.from(newNodeClone.querySelectorAll(newValue)));
                 }else if(/^:(html|text|json)$/.test($attr)){
                     // Handle :html, :text, :json
                     if(!$this) return;
@@ -201,7 +218,7 @@ class Colon{
                     }).length) return;
                     // If there are no directives, run the code and set it as an attribute.
                     let newValue = this.run($value,{$this});
-                    if(/^:/.test(attr)) attr = attr.slice(1);
+                    //if(/^:/.test(attr)) attr = attr.slice(1);
                     this.diffAttr($this,attr,null,newValue);
                 }
             });

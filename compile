@@ -8,20 +8,35 @@ if [[ $1 == "build" ]]; then
     rm -rf ./dist
     mkdir -p ./dist/
     npm run build
-    echo "package.json:";
+    echo "package.json: (current)";
     cat package.json | grep 'version';
-    read -p "Publish to github? " -n 1 -r
+    echo "package.json: (last published)";
+    git show origin/master:package.json | grep version;
+    read -p "Start testing? " -n 1 -r
     echo;
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        git add .;
-        read -p "Commit message: ";
-        git commit -m "$REPLY";
-        git push;
+    if [[ $REPLY =~ ^[yY]$ ]]; then
+        npm run test;
+        read -p "Pass? " -n 1 -r
+        if [[ $REPLY =~ ^[yY]$ ]]; then
+            kill %%;
+        fi
     fi
-    read -p "Publish to npm? " -n 1 -r
+    read -p "Publish? 'p' to continue: " -n 1 -r
     echo;
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        npm publish;
+    if [[ $REPLY =~ ^[pP]$ ]]; then
+        read -p "Publish to github? " -n 1 -r
+        echo;
+        if [[ $REPLY =~ ^[yY]$ ]]; then
+            git add .;
+            read -p "Commit message: ";
+            git commit -m "$REPLY";
+            git push;
+        fi
+        read -p "Publish to npm? " -n 1 -r
+        echo;
+        if [[ $REPLY =~ ^[yY]$ ]]; then
+            npm publish;
+        fi
     fi
     exit 0;
 fi

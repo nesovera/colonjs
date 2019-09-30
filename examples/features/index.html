@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdn.jsdelivr.net/npm/markdown-it@10.0.0/dist/markdown-it.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css">
+        <style> body{ padding:1.5em; } textarea.form-control { height: 6em; } </style>
+    </head>
+
+    <body>
+        <div id="app">
+            <div>
+                Inputs: 
+                <input type="checkbox" :checked="$data.bool" @input="$data.bool = !$data.bool;"/>
+                <input
+                    class="form-control"
+                    type="text"
+                    :value="$data.str"
+                    @input="$data.str = $this.value;"
+                    :disabled="!$data.bool">
+            </div>
+            <hr />
+            <div class="row">
+                <div class="col-4">
+                    <pre :json="$data"></pre>
+                </div>
+                <div class="col-4">
+                    <div>:show Test <span :show="$data.bool" class="text-success">Check</span></div>
+                    <div>:if Test <span :if="$data.bool" class="text-success">Check</span></div>
+                    <div>:if Test with Template <template :if="$data.bool"><span class="text-success">Check</span></template></div>
+                    <hr/>
+                    <div>Text: <span :text="$data.str"></span></div>
+                    <div>HTML: <span :html="$data.str"></span></div>
+                    <div>JSON: <span :json="$data.str"></span></div>
+                    <hr/>
+                    <div :title="$data.str">:attribute (example :title)</div>
+                    <div ::title="$data.str">::attribute (example ::title)</div>
+                </div>
+                <div class="col-4">
+                    <div :class="'text-success bg-dark'">Class as string: black and green</div>
+                    <div :class="{'text-success':$data.bool,'text-danger':!$data.bool}"> Class as object: $data.bool</div>
+                    <div :class="['text-success','bg-dark']">Class as array: black and green</div>
+                    <div :style="'color:'+ ($data.bool ? 'green' : 'red')">Style as string: $data.bool</div>
+                    <div :style="{'color': 'green',background:'black'}">Style as object: black and green</div>
+                    <div :style="['color:green','background:yellow']">Style as array: yellow and green</div>
+                    <hr />
+                    <div>$app as text: <span :text="$app"></span></div>
+                    <div>$root as text: <span :text="$root"></span></div>
+                    <div>$data as text: <span :text="$data"></span></div>
+                    <div>$methods as text: <span :text="$methods"></span></div>
+                    <div>$this as text: <span :text="$this"></span></div>
+                    <div>$parent as text: <span :text="$parent"></span></div>
+                    <div>$props as text: <span :text="$props"></span></div>
+                </div>
+                <div class="col-4">
+                    <h5>Markdown Interpreter</h5>
+                    <textarea
+                        class="form-control"
+                        :html="$data.str"
+                        @input="$data.str = $this.value;"
+                    ></textarea>
+                    <hr/>
+                    <div :md="$data.str"></div>
+                </div>
+                <div class="col-4">
+                    <CounterComponent :val="$data.arr[0]"></CounterComponent>
+                    <template :if="$data.bool">
+                        <Counter-Component :val="$data.arr[0]"><div>component in :if</div></Counter-Component>
+                    </template>
+                    <template :for="v in $data.arr">
+                        <countercomponent :val="v"><div>component in :for</div></countercomponent>
+                    </template>            
+                </div>
+                <div class="col-4">
+                    Loop through an array:
+                    <ul>
+                        <li :for="value,index in ['a','b']" :text="index+'- '+value"></li>
+                    </ul>
+                    Loop through an object: 
+                    <ul>
+                        <li :for="value,key in {a:10,b:20}" :text="key+': '+value"></li>
+                    </ul>
+                    Loop with template: 
+                    <ul>
+                        <template :for="value,key in {a:10,b:20}" >
+                            <li :text="key+': '"></li>
+                            <li :text="value"></li>
+                        </template>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </body>
+    <script src="../../dist/colon.min.js"></script>
+    <script>        
+        window.state = {
+            str:"Hello world!",
+            bool:true,
+            time: 'Waiting',
+            arr:[{num:10},{num:20},{num:30},],
+        };
+        
+        var Counter = {
+            template: `
+                <div>
+                    Counter: 
+                    <button 
+                        :text="$props.val.num"
+                        @click="$methods.addOne();"
+                    ></button>
+                    <slot></slot>
+                </div>`,
+            methods: () => ({
+                addOne(){
+                    this.props.val.num++;
+                    this.root.render();
+                }
+            }),
+        }
+        var app = new Colon({
+            el: document.getElementById("app"),
+            data:window.state,
+            mounted(){
+                window.setInterval(this.methods.updateTime,1000);
+            },
+            methods:{
+                updateTime(){
+                    this.data.time = new Date().toLocaleString();
+                    this.render();
+                },
+            },
+            components:{
+                CounterComponent: Counter,
+            },
+            directives:{
+                "^:md$": function({ $app, $value, $this }){
+                    var md = new markdownit();
+                    var newValue = $app.run($value);
+                    $this.innerHTML = md.render(newValue);
+                }
+            }
+        });
+    </script>
+    
+</html>

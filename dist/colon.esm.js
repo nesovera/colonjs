@@ -1,5 +1,5 @@
 /*!
- * Colon.js v0.0.5
+ * Colon.js v0.0.6
  * (c) 2018-2019 NesoVera (nesovera@gmail.com)
  * Released under the MIT License.
  */
@@ -33,9 +33,11 @@ function () {
     }
 
     // Attach params values to the instance
+    this.root = params.root || this;
     this.parent = params.parent;
     this.props = params.props || {};
-    this.scope = typeof params.scope === "function" ? params.scope() : params.scope || {};
+    this.data = typeof params.data === "function" ? params.data() : params.data || {};
+    this.methods = typeof params.methods === "function" ? params.methods() : params.methods || {};
     this.loopScope = params.loopScope || [];
     this.directives = params.directives || {}; // Make all component names lowercase
 
@@ -47,22 +49,30 @@ function () {
 
     if (params.template) {
       this.el = params.el || document.createElement("template");
-      this.el.innerHTML = params.template;
+      if (typeof params.template === 'string') this.el.innerHTML = params.template;
+      if (Array.isArray(params.template)) params.template.forEach(function (v) {
+        return _this.el.appendChild(v);
+      });
     }
 
     this.el = this.el || params.el;
-    if (!this.el) return console.error("Colon.js root element is not found"); // If not a recursive instance, 'this' is bound to functions in scope and directives
+    if (!this.el) return console.error("Colon root element not found"); // If not a recursive instance, 'this' is bound to functions in data, methods and directives
     // If a recursive instance, directives will have the initial instance's 'this'
 
     if (!params.recursive) {
-      Object.entries(this.scope).forEach(function (_ref2) {
+      Object.entries(this.data).forEach(function (_ref2) {
         var k = _ref2[0],
             v = _ref2[1];
-        if (typeof v === "function") _this.scope[k] = v.bind(_this);
+        if (typeof v === "function") _this.data[k] = v.bind(_this);
       });
-      Object.entries(this.directives).forEach(function (_ref3) {
+      Object.entries(this.methods).forEach(function (_ref3) {
         var k = _ref3[0],
             v = _ref3[1];
+        if (typeof v === "function") _this.methods[k] = v.bind(_this);
+      });
+      Object.entries(this.directives).forEach(function (_ref4) {
+        var k = _ref4[0],
+            v = _ref4[1];
         _this.directives[k] = v.bind(_this);
       });
     } // Bind 'this' to lifecycle event functions
@@ -152,21 +162,24 @@ function () {
   ;
 
   _proto.run = function run($code, _temp) {
-    var _ref4 = _temp === void 0 ? {} : _temp,
-        _ref4$$multi = _ref4.$multi,
-        $multi = _ref4$$multi === void 0 ? false : _ref4$$multi,
-        $arguments = _ref4.$arguments,
-        $event = _ref4.$event,
-        $this = _ref4.$this;
+    var _ref5 = _temp === void 0 ? {} : _temp,
+        _ref5$$multi = _ref5.$multi,
+        $multi = _ref5$$multi === void 0 ? false : _ref5$$multi,
+        $arguments = _ref5.$arguments,
+        $event = _ref5.$event,
+        $this = _ref5.$this;
 
-    var $scope = this.scope,
-        $parent = this.parent,
-        $props = this.props,
-        $loopScope = this.loopScope;
-    var loopVars = $loopScope.map(function (_ref5, i) {
-      var keyVar = _ref5.keyVar,
-          keyValue = _ref5.keyValue,
-          valVar = _ref5.valVar;
+    var $app = this;
+    var $data = $app.data,
+        $methods = $app.methods,
+        $root = $app.root,
+        $parent = $app.parent,
+        $props = $app.props,
+        $loopScope = $app.loopScope;
+    var loopVars = $loopScope.map(function (_ref6, i) {
+      var keyVar = _ref6.keyVar,
+          keyValue = _ref6.keyValue,
+          valVar = _ref6.valVar;
       return (keyVar ? "var " + keyVar + " = " + JSON.stringify(keyValue) + ";" : "") + ("var " + valVar + " = $loopScope[" + i + "].arr.find(function(v){return v[0]===" + JSON.stringify(keyValue) + "})[1];");
     }).join("");
     return eval(loopVars + ($multi ? $code : "(" + $code + ")"));
@@ -218,7 +231,7 @@ function () {
 
   _proto.diffAttr = function diffAttr(node, attr, oldValue, newValue) {
     if (oldValue === null) oldValue = node.getAttribute(attr);
-    if (attr.charAt(0) === ":" || oldValue === newValue) return;
+    if (oldValue === newValue) return;
     this.setAttr(node, attr, newValue);
   } // Function to remove node and add placeholder for :for, :if, <slot>, and custom components
   ;
@@ -242,36 +255,64 @@ function () {
         $attrs = treeNode.attrs,
         $children = treeNode.children; // If node has attribute :pre, do not process
 
-    if (this.attrExist($attrs, [":pre"])) return; // Handle if the node is a component
+    if (this.attrExist($attrs, [":pre"])) return; // Handle if node is a component
 
     if (this.components[$type]) {
       this.addPlaceHolder(treeNode, $type);
-      var props = Object.entries($attrs).map(function (_ref6) {
-        var k = _ref6[0],
-            v = _ref6[1];
-        return k.charAt(0) === ":" ? [k.slice(1), _this3.run(v)] : [k, v];
-      }).reduce(function (acc, _ref7) {
+      var props = Object.entries($attrs).map(function (_ref7) {
         var k = _ref7[0],
             v = _ref7[1];
+        return k.charAt(0) === ":" ? [k.slice(1), _this3.run(v)] : [k, v];
+      }).reduce(function (acc, _ref8) {
+        var k = _ref8[0],
+            v = _ref8[1];
         acc[k] = v;
         return acc;
       }, {});
       props.children = treeNode.cloneNode.cloneNode(true);
-      var componentNode = new Colon(_extends({
-        props: props,
-        parent: this
-      }, this.components[$type])).el;
-      treeNode.renderedChildren = this.diffArray($parentNode, treeNode.placeHolder, treeNode.renderedChildren, componentNode ? this.nodeToArray(componentNode) : []);
+
+      if (treeNode.instance) {
+        treeNode.instance.render();
+      } else {
+        treeNode.instance = new Colon(_extends({
+          props: props,
+          root: this.root,
+          parent: this
+        }, this.components[$type]));
+        var componentNode = treeNode.instance.el;
+        treeNode.renderedChildren = this.diffArray($parentNode, treeNode.placeHolder, treeNode.renderedChildren, componentNode ? this.nodeToArray(componentNode) : []);
+      }
+
+      return;
+    }
+
+    if ($type === "slot") {
+      // Handle <slot> in component
+      this.addPlaceHolder(treeNode, "slot");
+      var childNodes = this.getChildNodes(this.props.children.cloneNode(true));
+      new Colon({
+        template: childNodes,
+        recursive: true,
+        root: this.root,
+        parent: this,
+        props: this.props,
+        data: this.data,
+        methods: this.methods,
+        directives: this.directives,
+        components: this.components,
+        loopScope: this.loopScope
+      });
+      treeNode.renderedChildren = this.diffArray($parentNode, treeNode.placeHolder, treeNode.renderedChildren, childNodes);
       return;
     } // Cycle through all the attributes that start with : or @
 
 
-    Object.entries($attrs).filter(function (_ref8) {
-      var k = _ref8[0];
+    Object.entries($attrs).filter(function (_ref9) {
+      var k = _ref9[0];
       return /^[:@]/.test(k);
-    }).forEach(function (_ref9) {
-      var $attr = _ref9[0],
-          $value = _ref9[1];
+    }).forEach(function (_ref10) {
+      var $attr = _ref10[0],
+          $value = _ref10[1];
       // If node has :for or :if, do not process anything other than :for or :if
       if (_this3.attrExist($attrs, [":for", ":if"]) && !/^:(for|if)$/.test($attr)) return; // Remove the : or @ from the attribute name
 
@@ -313,16 +354,18 @@ function () {
           return [k, v];
         });
         if (_this3.isObject(list)) list = Object.entries(list);
-        list = list.reduce(function (acc, _ref10, i, arr) {
-          var keyValue = _ref10[0];
+        list = list.reduce(function (acc, _ref11, i, arr) {
+          var keyValue = _ref11[0];
           // Create a new Colon instance for each row of the list and render
           var newNodeClone = treeNode.cloneNode.cloneNode(true);
           new Colon({
             el: newNodeClone,
             recursive: true,
+            root: _this3.root,
             parent: _this3.parent,
             props: _this3.props,
-            scope: _this3.scope,
+            data: _this3.data,
+            methods: _this3.methods,
             directives: _this3.directives,
             components: _this3.components,
             loopScope: [].concat(_this3.loopScope, [{
@@ -349,9 +392,11 @@ function () {
           new Colon({
             el: newNodeClone,
             recursive: true,
+            root: _this3.root,
             parent: _this3.parent,
             props: _this3.props,
-            scope: _this3.scope,
+            data: _this3.data,
+            methods: _this3.methods,
             directives: _this3.directives,
             components: _this3.components,
             loopScope: _this3.loopScope
@@ -366,13 +411,14 @@ function () {
           $this: $this
         }) || "";
         if (Array.isArray(newValue)) newValue = newValue.join(isClass ? " " : ";");
-        if (_this3.isObject(newValue)) newValue = Object.entries(newValue).reduce(function (acc, _ref11) {
-          var k = _ref11[0],
-              v = _ref11[1];
+        if (_this3.isObject(newValue)) newValue = Object.entries(newValue).reduce(function (acc, _ref12) {
+          var k = _ref12[0],
+              v = _ref12[1];
           return acc + " " + (isClass ? v ? k : '' : k + ":" + v + ";");
         }, "");
+        var styleString = ("" + ($attrs[attr] || '') + (isClass ? " " : ";") + (newValue || '')).trim();
 
-        _this3.diffAttr($this, attr, null, ("" + ($attrs[attr] || '') + (isClass ? " " : ";") + (newValue || '')).trim());
+        _this3.diffAttr($this, attr, null, styleString);
       } else if ($attr === ":show") {
         // Handle :show
         var _newValue = _this3.run($value, {
@@ -380,42 +426,23 @@ function () {
         });
 
         $this[_newValue ? 'removeAttribute' : 'setAttribute']('__CJSHIDE', _newValue);
-      } else if ($type === "slot" && $attr === ":name") {
-        // Handle :name attribute for <slot>
-        var _newValue2 = _this3.run($value);
-
-        _this3.addPlaceHolder(treeNode, "slot:" + _newValue2);
-
-        var _newNodeClone = _this3.props.children.cloneNode(true);
-
-        new Colon({
-          el: _newNodeClone,
-          recursive: true,
-          parent: _this3,
-          props: _this3.props,
-          scope: _this3.scope,
-          directives: _this3.directives,
-          components: _this3.components,
-          loopScope: _this3.loopScope
-        });
-        treeNode.renderedChildren = _this3.diffArray($parentNode, treeNode.placeHolder, treeNode.renderedChildren, Array.from(_newNodeClone.querySelectorAll(_newValue2)));
       } else if (/^:(html|text|json)$/.test($attr)) {
         // Handle :html, :text, :json
         if (!$this) return;
 
-        var _newValue3 = _this3.run($value, {
+        var _newValue2 = _this3.run($value, {
           $this: $this
         });
 
-        if (attr === "json") _newValue3 = JSON.stringify(_newValue3, null, 2);
-        if (_newValue3 === null || typeof _newValue3 === 'undefined') _newValue3 = "";
+        if (attr === "json") _newValue2 = JSON.stringify(_newValue2, null, 2);
+        if (_newValue2 === null || typeof _newValue2 === 'undefined') _newValue2 = "";
         var prop = attr === "html" ? "innerHTML" : "innerText";
-        if ($this[prop] !== _newValue3) $this[prop] = _newValue3;
+        if ($this[prop] !== _newValue2) $this[prop] = _newValue2;
       } else if ($attr) {
         // Run all the matching directives for the attribute
-        if (Object.entries(_this3.directives).filter(function (_ref12) {
-          var k = _ref12[0],
-              v = _ref12[1];
+        if (Object.entries(_this3.directives).filter(function (_ref13) {
+          var k = _ref13[0],
+              v = _ref13[1];
 
           if (new RegExp(k).test($attr)) {
             v({
@@ -429,13 +456,12 @@ function () {
           }
         }).length) return; // If there are no directives, run the code and set it as an attribute.
 
-        var _newValue4 = _this3.run($value, {
+        var _newValue3 = _this3.run($value, {
           $this: $this
-        });
+        }); //if(/^:/.test(attr)) attr = attr.slice(1);
 
-        if (/^:/.test(attr)) attr = attr.slice(1);
 
-        _this3.diffAttr($this, attr, null, _newValue4);
+        _this3.diffAttr($this, attr, null, _newValue3);
       }
     }); // If node does not have :for or :if, process all its non string children
 

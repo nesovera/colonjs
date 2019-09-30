@@ -25,6 +25,8 @@ const write = async (file, code, sourceMap) => {
             zlib.gzip(code,(err,zipped)=>{resolve(zipped)});
         }).then(zipped=>{
             report(' (gzipped: '+getSize(zipped)+')');
+            if(zipped.length < 2000) console.log(red("ERROR: File size too small"));
+            if(zipped.length > 3700) console.log(red("ERROR: File size too big"));
         });
     }else{
         report();
@@ -35,26 +37,31 @@ const start = async () => {
     await asyncForEach(builds, async (config) => {
         const dest = config.output.file;
         await rollup.rollup(config)
-          .then(bundle => bundle.generate(config.output))
-          .then((res) => {
-            let code = res.output[0].code;
-              if (/(min|prod)\.js$/.test(dest)) {
-                  const minified = terser.minify(res.output[0].code, {
-                      toplevel: true,
-                      output: { ascii_only: true },
-                      compress: { },
-                      sourceMap: true,
-                  });
-                  const code = config.output.banner + minified.code;
-                  const sourceMap = minified.map;
-                  return write(dest, code, sourceMap );
-              } else {
-                  return write(dest, code)
-              }
-          })
-          .catch((err)=>{
-              console.log(red("Failed to build: "+relative(dest)),err);
-          })
+            .then(bundle => bundle.generate(config.output))
+            .then((res) => {
+                let code = res.output[0].code;
+                if (/(min|prod)\.js$/.test(dest)) {
+                    const minified = terser.minify(code, {
+                        toplevel: true,
+                        output: { ascii_only: true },
+                        compress: { },
+                        sourceMap: true,
+                        mangle:{
+                            reserved: ['$app','$this','$scope','$parent','$props','$event','$arguments','$multi','$loopScope'],
+                        },
+                    });
+                    const minifiedCode = config.output.banner + minified.code;
+                    const sourceMap = minified.map;
+                    if(minifiedCode.length < 5000) console.log(red("ERROR: File size too small"));
+                    return write(dest, minifiedCode, sourceMap );
+                } else {
+                    if(code.length < 10000) console.log(red("ERROR: File size too small"));
+                    return write(dest, code)
+                }
+            })
+            .catch((err)=>{
+                console.log(red("Failed to build: "+relative(dest)),err);
+            })
     });
 }
 

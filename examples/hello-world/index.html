@@ -8,7 +8,7 @@
 
     <body>
         <div id="app">
-            <span :text="$scope.message"></span>
+            <span :text="$data.message"></span>
         </div>
     </body>
 
@@ -16,7 +16,7 @@
     <script>
         var app = new Colon({
             el: document.getElementById("app"),
-            scope:{
+            data:{
                 message:"Hello world!",
             },
         });

@@ -1,6 +1,6 @@
 {
   "name": "colonjs",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A micro front end framework (3kb gzipped) similar to Vue.js",
   "main": "src/Colon.js",
   "source": "src/index.js",
@@ -12,7 +12,8 @@
   "scripts": {
     "lint": "eslint ./src",
     "build": "node scripts/build.js",
-    "server": "live-server --open=/examples/ --no-css-inject"
+    "server": "live-server --open=/examples/ --no-css-inject",
+    "test": "live-server --open=/examples/features/ --no-css-inject"
   },
   "author": "Neso Vera",
   "license": "MIT",
