@@ -120,7 +120,7 @@
             }),
         }
         var app = new Colon({
-            el: document.getElementById("app"),
+            el: "#app",
             data:window.state,
             mounted(){
                 window.setInterval(this.methods.updateTime,1000);

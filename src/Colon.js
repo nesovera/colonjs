@@ -16,6 +16,9 @@ class Colon{
             if(typeof params.template === 'string')this.el.innerHTML = params.template;
             if(Array.isArray(params.template)) params.template.forEach(v=>this.el.appendChild(v));
         }
+        if(typeof params.el === "string"){
+            this.el = document.querySelector(params.el);
+        }
         this.el = this.el || params.el;
         if(!this.el) return console.error("Colon root element not found");
         // If not a recursive instance, 'this' is bound to functions in data, methods and directives

@@ -1,5 +1,5 @@
 /*!
- * Colon.js v0.0.6
+ * Colon.js v0.0.7
  * (c) 2018-2019 NesoVera (nesovera@gmail.com)
  * Released under the MIT License.
  */
@@ -53,6 +53,10 @@ function () {
       if (Array.isArray(params.template)) params.template.forEach(function (v) {
         return _this.el.appendChild(v);
       });
+    }
+
+    if (typeof params.el === "string") {
+      this.el = document.querySelector(params.el);
     }
 
     this.el = this.el || params.el;
