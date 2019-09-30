@@ -17,7 +17,7 @@ class Colon{
             if(Array.isArray(params.template)) params.template.forEach(v=>this.el.appendChild(v));
         }
         if(typeof params.el === "string"){
-            this.el = document.querySelector(params.el);
+            this.el = params.el = document.querySelector(params.el);
         }
         this.el = this.el || params.el;
         if(!this.el) return console.error("Colon root element not found");
