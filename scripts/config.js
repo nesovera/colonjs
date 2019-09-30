@@ -6,7 +6,7 @@ const path = require('path');
 const version = require('../package.json').version;
 
 const banner = `/*!
- * Colon.js v${version}
+ * ColonJs v${version}
  * (c) 2018-${new Date().getFullYear()} NesoVera (nesovera@gmail.com)
  * Released under the MIT License.
  */

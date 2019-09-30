@@ -1,4 +1,4 @@
-Colon.js
+ColonJs
 ===========
 
 A micro front end framework (3kb gzipped) similar to Vue.js. Zero dependencies, IE11 compatible. 
@@ -35,6 +35,8 @@ Send us what you build using ColonJs, we will list them here.
 Version history
 ---------------
 
+* v0.0.8
+	- Move to $data and $methods for state preservation needs.
 * v0.0.1
 	- Initial release
 
