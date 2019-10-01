@@ -1,5 +1,5 @@
 /*!
- * ColonJs v0.0.10
+ * ColonJs v0.0.11
  * (c) 2018-2019 NesoVera (nesovera@gmail.com)
  * Released under the MIT License.
  */
@@ -47,6 +47,10 @@ function () {
       return acc[k.toLowerCase()] = v, acc;
     }, {}); // If params has template variable create 'el' and attach to the instance
 
+    if (typeof params.el === "string") {
+      this.el = params.el = document.querySelector(params.el);
+    }
+
     if (params.template) {
       this.el = params.el || document.createElement("template");
       if (typeof params.template === 'string') this.el.innerHTML = params.template;
@@ -55,28 +59,19 @@ function () {
       });
     }
 
-    if (typeof params.el === "string") {
-      this.el = params.el = document.querySelector(params.el);
-    }
-
     this.el = this.el || params.el;
     if (!this.el) return console.error("Colon root element not found"); // If not a recursive instance, 'this' is bound to functions in data, methods and directives
     // If a recursive instance, directives will have the initial instance's 'this'
 
     if (!params.recursive) {
-      Object.entries(this.data).forEach(function (_ref2) {
+      Object.entries(this.methods).forEach(function (_ref2) {
         var k = _ref2[0],
             v = _ref2[1];
-        if (typeof v === "function") _this.data[k] = v.bind(_this);
-      });
-      Object.entries(this.methods).forEach(function (_ref3) {
-        var k = _ref3[0],
-            v = _ref3[1];
         if (typeof v === "function") _this.methods[k] = v.bind(_this);
       });
-      Object.entries(this.directives).forEach(function (_ref4) {
-        var k = _ref4[0],
-            v = _ref4[1];
+      Object.entries(this.directives).forEach(function (_ref3) {
+        var k = _ref3[0],
+            v = _ref3[1];
         _this.directives[k] = v.bind(_this);
       });
     } // Bind 'this' to lifecycle event functions
@@ -166,12 +161,12 @@ function () {
   ;
 
   _proto.run = function run($code, _temp) {
-    var _ref5 = _temp === void 0 ? {} : _temp,
-        _ref5$$multi = _ref5.$multi,
-        $multi = _ref5$$multi === void 0 ? false : _ref5$$multi,
-        $arguments = _ref5.$arguments,
-        $event = _ref5.$event,
-        $this = _ref5.$this;
+    var _ref4 = _temp === void 0 ? {} : _temp,
+        _ref4$$multi = _ref4.$multi,
+        $multi = _ref4$$multi === void 0 ? false : _ref4$$multi,
+        $arguments = _ref4.$arguments,
+        $event = _ref4.$event,
+        $this = _ref4.$this;
 
     var $app = this;
     var $data = $app.data,
@@ -180,10 +175,10 @@ function () {
         $parent = $app.parent,
         $props = $app.props,
         $loopScope = $app.loopScope;
-    var loopVars = $loopScope.map(function (_ref6, i) {
-      var keyVar = _ref6.keyVar,
-          keyValue = _ref6.keyValue,
-          valVar = _ref6.valVar;
+    var loopVars = $loopScope.map(function (_ref5, i) {
+      var keyVar = _ref5.keyVar,
+          keyValue = _ref5.keyValue,
+          valVar = _ref5.valVar;
       return (keyVar ? "var " + keyVar + " = " + JSON.stringify(keyValue) + ";" : "") + ("var " + valVar + " = $loopScope[" + i + "].arr.find(function(v){return v[0]===" + JSON.stringify(keyValue) + "})[1];");
     }).join("");
     return eval(loopVars + ($multi ? $code : "(" + $code + ")"));
@@ -263,13 +258,13 @@ function () {
 
     if (this.components[$type]) {
       this.addPlaceHolder(treeNode, $type);
-      var props = Object.entries($attrs).map(function (_ref7) {
+      var props = Object.entries($attrs).map(function (_ref6) {
+        var k = _ref6[0],
+            v = _ref6[1];
+        return k.charAt(0) === ":" ? [k.slice(1), _this3.run(v)] : [k, v];
+      }).reduce(function (acc, _ref7) {
         var k = _ref7[0],
             v = _ref7[1];
-        return k.charAt(0) === ":" ? [k.slice(1), _this3.run(v)] : [k, v];
-      }).reduce(function (acc, _ref8) {
-        var k = _ref8[0],
-            v = _ref8[1];
         acc[k] = v;
         return acc;
       }, {});
@@ -311,12 +306,12 @@ function () {
     } // Cycle through all the attributes that start with : or @
 
 
-    Object.entries($attrs).filter(function (_ref9) {
-      var k = _ref9[0];
+    Object.entries($attrs).filter(function (_ref8) {
+      var k = _ref8[0];
       return /^[:@]/.test(k);
-    }).forEach(function (_ref10) {
-      var $attr = _ref10[0],
-          $value = _ref10[1];
+    }).forEach(function (_ref9) {
+      var $attr = _ref9[0],
+          $value = _ref9[1];
       // If node has :for or :if, do not process anything other than :for or :if
       if (_this3.attrExist($attrs, [":for", ":if"]) && !/^:(for|if)$/.test($attr)) return; // Remove the : or @ from the attribute name
 
@@ -358,8 +353,8 @@ function () {
           return [k, v];
         });
         if (_this3.isObject(list)) list = Object.entries(list);
-        list = list.reduce(function (acc, _ref11, i, arr) {
-          var keyValue = _ref11[0];
+        list = list.reduce(function (acc, _ref10, i, arr) {
+          var keyValue = _ref10[0];
           // Create a new Colon instance for each row of the list and render
           var newNodeClone = treeNode.cloneNode.cloneNode(true);
           new Colon({
@@ -415,9 +410,9 @@ function () {
           $this: $this
         }) || "";
         if (Array.isArray(newValue)) newValue = newValue.join(isClass ? " " : ";");
-        if (_this3.isObject(newValue)) newValue = Object.entries(newValue).reduce(function (acc, _ref12) {
-          var k = _ref12[0],
-              v = _ref12[1];
+        if (_this3.isObject(newValue)) newValue = Object.entries(newValue).reduce(function (acc, _ref11) {
+          var k = _ref11[0],
+              v = _ref11[1];
           return acc + " " + (isClass ? v ? k : '' : k + ":" + v + ";");
         }, "");
         var styleString = ("" + ($attrs[attr] || '') + (isClass ? " " : ";") + (newValue || '')).trim();
@@ -444,9 +439,9 @@ function () {
         if ($this[prop] !== _newValue2) $this[prop] = _newValue2;
       } else if ($attr) {
         // Run all the matching directives for the attribute
-        if (Object.entries(_this3.directives).filter(function (_ref13) {
-          var k = _ref13[0],
-              v = _ref13[1];
+        if (Object.entries(_this3.directives).filter(function (_ref12) {
+          var k = _ref12[0],
+              v = _ref12[1];
 
           if (new RegExp(k).test($attr)) {
             v({

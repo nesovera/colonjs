@@ -15,6 +15,7 @@ if [[ $1 == "build" ]]; then
     read -p "Start testing? " -n 1 -r
     echo;
     if [[ $REPLY =~ ^[yY]$ ]]; then
+        npx babel ./examples/features/app.js --out-file ./examples/features/app.compiled.js --presets=@babel/env;
         npm run test;
         read -p "Pass? " -n 1 -r
         if [[ $REPLY =~ ^[yY]$ ]]; then

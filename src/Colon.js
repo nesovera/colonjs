@@ -11,20 +11,19 @@ class Colon{
         // Make all component names lowercase
         this.components = Object.entries(params.components || {}).reduce((acc,[k,v])=>(acc[k.toLowerCase()]=v, acc),{});
         // If params has template variable create 'el' and attach to the instance
-        if(params.template){
-            this.el = params.el || document.createElement("template");
-            if(typeof params.template === 'string')this.el.innerHTML = params.template;
-            if(Array.isArray(params.template)) params.template.forEach(v=>this.el.appendChild(v));
-        }
         if(typeof params.el === "string"){
             this.el = params.el = document.querySelector(params.el);
+        }
+        if(params.template){
+            this.el = params.el || document.createElement("template");
+            if(typeof params.template === 'string') this.el.innerHTML = params.template;
+            if(Array.isArray(params.template)) params.template.forEach(v=>this.el.appendChild(v));
         }
         this.el = this.el || params.el;
         if(!this.el) return console.error("Colon root element not found");
         // If not a recursive instance, 'this' is bound to functions in data, methods and directives
         // If a recursive instance, directives will have the initial instance's 'this'
         if(!params.recursive){
-            Object.entries(this.data).forEach(([k,v])=>{ if(typeof v ==="function") this.data[k] = v.bind(this); });
             Object.entries(this.methods).forEach(([k,v])=>{ if(typeof v ==="function") this.methods[k] = v.bind(this); });
             Object.entries(this.directives).forEach(([k,v])=>{ this.directives[k] = v.bind(this); });
         }
@@ -47,7 +46,7 @@ class Colon{
                 events:[]
             });
         };
-        this.templateTree = createTemplateTree(this.el,null);
+        this.templateTree = createTemplateTree( this.el, null );
         // Do the initial rendering
         this.render();
         // Call lifecycle event 'mounted'

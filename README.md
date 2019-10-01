@@ -1,7 +1,7 @@
 ColonJs
 ===========
 
-A micro front end framework (3kb gzipped) similar to Vue.js. Zero dependencies, IE11 compatible. 
+A micro front end framework (3kb gzipped) similar to Vue.js. Zero dependencies, IE9+ compatible. 
 
 Documentation
 ------------
