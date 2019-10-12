@@ -1,6 +1,6 @@
 {
   "name": "colonjs",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "A micro front end framework (3kb gzipped) similar to Vue.js",
   "main": "src/Colon.js",
   "source": "src/index.js",
@@ -17,6 +17,11 @@
   },
   "author": "Neso Vera",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nesovera/colonjs.git"
+  },
+  "homepage": "https://colonjs.org",
   "devDependencies": {
     "@babel/cli": "^7.6.2",
     "@babel/core": "^7.6.2",
