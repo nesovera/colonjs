@@ -228,7 +228,11 @@ class Colon{
         if( !this.attrExist($attrs,[":for",":if"]) ) $children.filter(v=>typeof v !== "string").forEach( this.renderTreeNode.bind(this) );
     }
     // Render template tree.
-    render(){
+    render(fn){
+        // Run fn function if provided
+        if(fn){
+            fn.bind(this)();
+        }
         // Call lifecycle event 'beforeUpdate'
         this.beforeUpdate();
         // Initiate render for template tree.
