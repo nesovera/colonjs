@@ -1,5 +1,5 @@
 /*!
- * ColonJs v0.0.12
+ * ColonJs v0.0.13
  * (c) 2018-2019 NesoVera (nesovera@gmail.com)
  * Released under the MIT License.
  */
@@ -627,8 +627,13 @@
     } // Render template tree.
     ;
 
-    _proto.render = function render() {
-      // Call lifecycle event 'beforeUpdate'
+    _proto.render = function render(fn) {
+      // Run fn function if provided
+      if (fn) {
+        fn.bind(this)();
+      } // Call lifecycle event 'beforeUpdate'
+
+
       this.beforeUpdate(); // Initiate render for template tree.
 
       this.renderTreeNode(this.templateTree); // Call lifecycle event 'updated'
