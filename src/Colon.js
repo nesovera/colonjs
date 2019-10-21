@@ -231,7 +231,7 @@ class Colon{
     render(fn){
         // Run fn function if provided
         if(fn){
-            fn.bind(this)();
+            fn.bind(this)(this);
         }
         // Call lifecycle event 'beforeUpdate'
         this.beforeUpdate();

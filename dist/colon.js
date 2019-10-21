@@ -1,5 +1,5 @@
 /*!
- * ColonJs v0.0.13
+ * ColonJs v0.0.14
  * (c) 2018-2019 NesoVera (nesovera@gmail.com)
  * Released under the MIT License.
  */
@@ -630,7 +630,7 @@
     _proto.render = function render(fn) {
       // Run fn function if provided
       if (fn) {
-        fn.bind(this)();
+        fn.bind(this)(this);
       } // Call lifecycle event 'beforeUpdate'
 
 
