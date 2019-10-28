@@ -6,7 +6,9 @@ A micro front end framework (3kb gzipped) similar to Vue.js. Zero dependencies, 
 Documentation
 ------------
 
-Introduction: 
+Documentation can be found at [colonjs.org](https://colonjs.org)
+
+Live Examples: 
 
 - [ColonJs #1: Hello World](https://htmlpen.com/nesovera/colonjs-hello-world/editor/)
 - [ColonJs #2: Bind Dynamic Title](https://htmlpen.com/nesovera/colonjs-bind-title/editor/)
@@ -17,8 +19,7 @@ Introduction:
 - [ColonJs #7: Components](https://htmlpen.com/nesovera/colonjs-components/editor/)
 - [ColonJs #8: Directives (Example: Markdown Interpreter)](https://htmlpen.com/nesovera/colonjs-directives/editor/)
 
-More Coming soon...
-
+More examples can be found at [colonjs.org](https://colonjs.org)
 
 Contributing
 ------------
