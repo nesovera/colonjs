@@ -1,5 +1,5 @@
 /*!
- * ColonJs v0.0.14
+ * ColonJs v0.0.15
  * (c) 2018-2019 NesoVera (nesovera@gmail.com)
  * Released under the MIT License.
  */
