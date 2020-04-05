@@ -1,6 +1,6 @@
 /*!
  * ColonJs v0.0.15
- * (c) 2018-2019 NesoVera (nesovera@gmail.com)
+ * (c) 2018-2020 NesoVera (nesovera@gmail.com)
  * Released under the MIT License.
  */
 
@@ -22,9 +22,7 @@ function _extends() {
   return _extends.apply(this, arguments);
 }
 
-var Colon =
-/*#__PURE__*/
-function () {
+var Colon = /*#__PURE__*/function () {
   function Colon(params) {
     var _this = this;
 

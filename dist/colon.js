@@ -1,6 +1,6 @@
 /*!
  * ColonJs v0.0.15
- * (c) 2018-2019 NesoVera (nesovera@gmail.com)
+ * (c) 2018-2020 NesoVera (nesovera@gmail.com)
  * Released under the MIT License.
  */
 
@@ -8,7 +8,7 @@
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
   (global = global || self, global.Colon = factory());
-}(this, function () { 'use strict';
+}(this, (function () { 'use strict';
 
   // https://tc39.github.io/ecma262/#sec-array.prototype.find
   if (!Array.prototype.find) {
@@ -179,9 +179,7 @@
     return _extends.apply(this, arguments);
   }
 
-  var Colon =
-  /*#__PURE__*/
-  function () {
+  var Colon = /*#__PURE__*/function () {
     function Colon(params) {
       var _this = this;
 
@@ -646,4 +644,4 @@
 
   return Colon;
 
-}));
+})));
