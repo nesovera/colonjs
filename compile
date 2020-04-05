@@ -25,7 +25,7 @@ if [[ $1 == "build" ]]; then
     read -p "Publish? 'p' to continue: " -n 1 -r
     echo;
     if [[ $REPLY =~ ^[pP]$ ]]; then
-        read -p "Publish to github? " -n 1 -r
+        read -p "Publish to github? [y/n]" -n 1 -r
         echo;
         if [[ $REPLY =~ ^[yY]$ ]]; then
             git add .;
@@ -33,7 +33,7 @@ if [[ $1 == "build" ]]; then
             git commit -m "$REPLY";
             git push;
         fi
-        read -p "Publish to npm? " -n 1 -r
+        read -p "Publish to npm? [y/n]" -n 1 -r
         echo;
         if [[ $REPLY =~ ^[yY]$ ]]; then
             npm publish;

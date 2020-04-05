@@ -1,6 +1,6 @@
 {
   "name": "colonjs",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "A micro front end framework (3kb gzipped) similar to Vue.js",
   "main": "src/Colon.js",
   "source": "src/index.js",
