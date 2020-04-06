@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdn.jsdelivr.net/npm/colonjs@0"></script>
+        <style>ul{ list-style:none; }</style>
+    </head>
+
+    <body>
+        <div id="app">
+            <ul>
+                <li :for="todo,key in $data.todos">
+                  <span :text="key+1"></span>-
+                  <span :text="todo.text"></span>
+                </li>
+            </ul>
+        </div>
+    </body>
+    
+    <script>
+        var app = new Colon({
+            el: '#app',
+            data: {
+                todos: [
+                    { text: 'Sit down' },
+                    { text: 'Learn ColonJs' },
+                    { text: 'Make the tiniest cool website' }
+                ]
+            }
+        });
+    </script>
+    
+</html>

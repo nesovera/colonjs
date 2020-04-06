@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdn.jsdelivr.net/npm/colonjs@0"></script>
+    </head>
+
+    <body>
+        <div id="app">
+            <span :if="$data.seen">Do you see me?</span>
+        </div>
+    </body>
+    
+    <script>
+        var app = new Colon({
+            el: '#app',
+            data: {
+                seen: true
+            }
+        });
+    </script>
+    
+</html>

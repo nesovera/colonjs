@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdn.jsdelivr.net/npm/colonjs@0"></script>
+    </head>
+
+    <body>
+        <div id="app">
+            <ol>
+                <template :for="todo in $data.todoList">
+                    <Todo-Item :item="todo"></Todo-Item>
+                </template>
+            </ol>
+        </div>
+    </body>
+    
+    <script>
+        var TodoItem = {
+            template: '<li :text="$props.item.text"></li>'
+        };
+        var app = new Colon({
+            el: '#app',
+            components:{
+                TodoItem:TodoItem,
+            },
+            data: {
+                todoList: [
+                    { id: 0, text: 'Sit down' },
+                    { id: 1, text: 'Learn ColonJs' },
+                    { id: 2, text: 'Make the tiniest cool website' }
+                ]
+            },
+        });
+    </script>
+    
+</html>

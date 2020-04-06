@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdn.jsdelivr.net/npm/colonjs@0"></script>
+        <script src="https://cdn.jsdelivr.net/npm/markdown-it@10.0.0/dist/markdown-it.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css">
+        <style> body{ padding:1.5em; } textarea.form-control { height: 6em; } </style>
+    </head>
+
+    <body>
+        <div id="app">
+            <h5>Example: Markdown Interpreter</h5>
+            <textarea
+                class="form-control"
+                :html="$data.str"
+                @input="$data.str = $this.value;"
+            ></textarea>
+            <hr/>
+            <div :md="$data.str"></div>
+        </div>
+    </body>
+
+    <script>
+        var app = new Colon({
+            el: '#app',
+            data:{
+                str:"#### Defining new directives (:md)\n"+
+                    "- Interprets markdown strings.",
+            },
+            directives:{
+                "^:md$": function({$app,$value,$this}){
+                    var md = new markdownit();
+                    var newValue = $app.run($value);
+                    $this.innerHTML = md.render(newValue);
+                }
+            }
+        });
+    </script>
+    
+</html>

@@ -7,6 +7,7 @@ Documentation
 ------------
 
 Documentation can be found at [colonjs.org](https://colonjs.org)
+You can also learn from examples at /examples folder.
 
 Contributing
 ------------

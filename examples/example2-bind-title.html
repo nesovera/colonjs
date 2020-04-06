@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdn.jsdelivr.net/npm/colonjs@0"></script>
+    </head>
+
+    <body>
+        <div id="app">
+            <span :title="$data.message">
+                Hover your mouse to see dynamicly bound title.
+            </span>
+        </div>
+    </body>
+    
+    <script>
+        var app = new Colon({
+            el: '#app',
+            data: {
+                message: 'You loaded this page on ' + new Date().toLocaleString()
+            }
+        });
+    </script>
+    
+</html>
